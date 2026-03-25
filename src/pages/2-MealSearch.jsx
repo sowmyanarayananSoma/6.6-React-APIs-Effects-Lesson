@@ -77,10 +77,39 @@ export default function MealFetchOnChange() {
   //    - response.meals can be null if no results found — handle that case
   //    - On success: call setMeals with the meals array from the response
   useEffect(() => {
-    // TODO: write your async fetch function here
+    async function fetchMeals() {
+      if (!searchTerm.trim()) {
+        setMeals([]);
+        return;
+      }
 
-    // TODO: call it
-  }, []); // TODO: what belongs in this dependency array?
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const response = await fetch(`https://www.themealdb.com/api/json/v1/1/search.php?s=${searchTerm}`);
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch meals");
+        }
+        
+        const data = await response.json();
+        
+        // Handle case where no results are found (response.meals is null)
+        if (data.meals === null) {
+          setMeals([]);
+        } else {
+          setMeals(data.meals);
+        }
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMeals();
+  }, [searchTerm]); // Re-run whenever searchTerm changes
 
   if (loading) return <p>Loading meals...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -105,18 +134,20 @@ export default function MealFetchOnChange() {
         }}
       />
 
-      {/* TODO in class: replace the two hardcoded MealCards below with a .map() over meals */}
+      {/* Render meal cards dynamically from API data */}
       <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
-        <MealCard
-          name={meals[0].strMeal}
-          image={meals[0].strMealThumb}
-          instructions={meals[0].strInstructions}
-        />
-        <MealCard
-          name={meals[1].strMeal}
-          image={meals[1].strMealThumb}
-          instructions={meals[1].strInstructions}
-        />
+        {meals.length === 0 ? (
+          <p style={{ color: "#888", fontStyle: "italic" }}>No meals found. Try searching for something else!</p>
+        ) : (
+          meals.map((meal) => (
+            <MealCard
+              key={meal.idMeal}
+              name={meal.strMeal}
+              image={meal.strMealThumb}
+              instructions={meal.strInstructions}
+            />
+          ))
+        )}
       </div>
 
     </div>

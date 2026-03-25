@@ -25,7 +25,26 @@ export default function WeatherOnMount() {
   //    - Use try / catch / finally
   //    - Check response.ok before parsing JSON
   //    - Set weather, error, and loading state accordingly
+  useEffect(() => {
+    async function fetchWeather() {
+      try {
+        const response = await fetch(API_URL);
+        
+        if (!response.ok) {
+          throw new Error("Failed to fetch weather data");
+        }
+        
+        const data = await response.json();
+        setWeather(data.current_weather);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
 
+    fetchWeather();
+  }, []);
 
   // 3. Handle the loading state
   //    For now render a plain text message
@@ -41,9 +60,9 @@ export default function WeatherOnMount() {
     <div>
       <h2>Current Weather — Mississauga</h2>
 
-      {/* TODO: display weather.temperature */}
-      {/* TODO: display weather.windspeed */}
-      {/* TODO: display weather.weathercode */}
+      <p>Temperature: {weather.temperature}°C</p>
+      <p>Wind Speed: {weather.windspeed} km/h</p>
+      <p>Weather Code: {weather.weathercode}</p>
     </div>
   );
 }

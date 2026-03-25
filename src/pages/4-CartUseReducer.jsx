@@ -45,29 +45,64 @@ const initialState = {
 //    - Receives current state and an action object
 //    - Returns new state using spread: { ...state, fieldToChange: newValue }
 //    - Never mutates state directly
-
+function cartReducer(state, action) {
+  switch (action.type) {
+    case "ADD_ITEM":
+      return {
+        ...state,
+        items: [...state.items, action.item],
+        totalPrice: state.totalPrice + action.item.price,
+        itemCount: state.itemCount + 1,
+      };
+    case "REMOVE_ITEM":
+      const index = state.items.findIndex((i) => i.id === action.item.id);
+      if (index === -1) return state;
+      const updated = [...state.items];
+      updated.splice(index, 1);
+      return {
+        ...state,
+        items: updated,
+        totalPrice: state.totalPrice - action.item.price,
+        itemCount: state.itemCount - 1,
+      };
+    case "APPLY_DISCOUNT":
+      return {
+        ...state,
+        discount: action.amount,
+        totalPrice: state.totalPrice * (1 - action.amount / 100),
+      };
+    case "CHECKOUT":
+      return {
+        ...state,
+        isCheckingOut: true,
+      };
+    case "RESET":
+      return initialState;
+    default:
+      return state;
+  }
+}
 
 export default function CartUseReducer() {
   // 3. Wire up useReducer
-
-
+  const [state, dispatch] = useReducer(cartReducer, initialState);
 
   // 4. Each handler dispatches one action — the reducer handles the rest
   //    Compare these to CartUseState.jsx where each handler called multiple setters
   function handleAddItem(item)          {
-    
+    dispatch({ type: "ADD_ITEM", item });
   }
   function handleRemoveItem(item)       {
-
+    dispatch({ type: "REMOVE_ITEM", item });
   }
   function handleApplyDiscount(amount)  {
-
+    dispatch({ type: "APPLY_DISCOUNT", amount });
   }
   function handleCheckout()             {
-
+    dispatch({ type: "CHECKOUT" });
   }
   function handleReset()                {
-
+    dispatch({ type: "RESET" });
   }
 
   if (state.isCheckingOut) {
